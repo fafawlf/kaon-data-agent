@@ -1,19 +1,19 @@
 <div align="center">
 
 <!-- TODO: Replace with actual logo -->
-<img src="docs/assets/logo.svg" alt="L3 Data Agent" width="320" />
+<img src="docs/assets/logo.svg" alt="Kaon Data Agent" width="320" />
 
-# L3 Autonomous Data Agents
+# Kaon Data Agent (KDA)
 
 **The first open-source playbook-driven data analysis agent.**
 
-L3 doesn't just translate questions to SQL — it investigates root causes,<br>
+KDA doesn't just translate questions to SQL — it investigates root causes,<br>
 decomposes by dimensions, cross-validates, and delivers actionable conclusions.
 
-[![PyPI](https://img.shields.io/pypi/v/l3-data-agent?color=blue)](https://pypi.org/project/l3-data-agent/)
+[![PyPI](https://img.shields.io/pypi/v/kaon-data-agent?color=blue)](https://pypi.org/project/kaon-data-agent/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
-[![GitHub stars](https://img.shields.io/github/stars/fafawlf/l3-data-agent?style=social)](https://github.com/fafawlf/l3-data-agent)
+[![GitHub stars](https://img.shields.io/github/stars/fafawlf/kaon-data-agent?style=social)](https://github.com/fafawlf/kaon-data-agent)
 
 [Quick Start](#-quick-start) | [How It Works](#-how-it-works) | [Docs](#-configuration) | [Community](#-community)
 
@@ -21,13 +21,13 @@ decomposes by dimensions, cross-validates, and delivers actionable conclusions.
 
 ---
 
-<p align="center"><img src="docs/assets/demo.svg" alt="L3 demo — investigating a DAU drop" width="800" /></p>
+<p align="center"><img src="docs/assets/demo.svg" alt="KDA demo — investigating a DAU drop" width="800" /></p>
 
-## Why L3?
+## Why KDA?
 
 Most "AI + SQL" tools translate a natural-language question into a single query. That solves *"what is X?"* but not *"why did X change?"* or *"what should we do?"*
 
-| Capability | Vanna / PandasAI / WrenAI | L3 Agent |
+| Capability | Vanna / PandasAI / WrenAI | KDA |
 |---|---|---|
 | Single question to SQL | Yes | Yes |
 | Multi-step investigation (5-15 queries) | No | Yes |
@@ -38,7 +38,7 @@ Most "AI + SQL" tools translate a natural-language question into a single query.
 | Knowledge-base integration | Partial | Yes |
 | Context-window management | N/A | Yes (auto-compression) |
 
-**L3 operates at a different level**: it answers *why* and *what to do*, not just *what*.
+**KDA operates at a different level**: it answers *why* and *what to do*, not just *what*.
 
 ---
 
@@ -58,9 +58,9 @@ Most "AI + SQL" tools translate a natural-language question into a single query.
 ### 30-second demo
 
 ```bash
-pip install l3-data-agent
+pip install kaon-data-agent
 export ANTHROPIC_API_KEY=sk-ant-...
-l3-agent demo
+kda demo
 ```
 
 This creates a demo SQLite database (SaaS product with a deliberate DAU anomaly) and starts an interactive session. Try asking:
@@ -71,12 +71,12 @@ This creates a demo SQLite database (SaaS product with a deliberate DAU anomaly)
 > What are the top countries by revenue per user?
 ```
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fafawlf/l3-data-agent/blob/main/examples/demo/demo.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fafawlf/kaon-data-agent/blob/main/examples/demo/demo.ipynb)
 
 ### Connect your own database
 
 ```bash
-pip install l3-data-agent
+pip install kaon-data-agent
 
 # 1. Write a config file
 cat > config.yaml << 'EOF'
@@ -103,11 +103,11 @@ cat > knowledge/metrics.md << 'EOF'
 EOF
 
 # 3. Generate the knowledge index
-l3-agent index ./knowledge
+kda index ./knowledge
 
 # 4. Launch
 export ANTHROPIC_API_KEY=sk-ant-...
-l3-agent --config config.yaml
+kda --config config.yaml
 ```
 
 ---
@@ -151,14 +151,14 @@ l3-agent --config config.yaml
 
 ## Supported Databases
 
-L3 uses SQLAlchemy — any database with a dialect works.
+KDA uses SQLAlchemy — any database with a dialect works.
 
 | Database | Install | Status |
 |----------|---------|--------|
 | SQLite | built-in | Supported |
-| PostgreSQL | `pip install l3-data-agent[postgresql]` | Supported |
-| MySQL / StarRocks | `pip install l3-data-agent[mysql]` | Supported |
-| DuckDB | `pip install l3-data-agent[duckdb]` | Supported |
+| PostgreSQL | `pip install kaon-data-agent[postgresql]` | Supported |
+| MySQL / StarRocks | `pip install kaon-data-agent[mysql]` | Supported |
+| DuckDB | `pip install kaon-data-agent[duckdb]` | Supported |
 | BigQuery | — | Planned |
 | Snowflake | — | Planned |
 | ClickHouse | — | Planned |
@@ -224,7 +224,7 @@ context:
 Write plain Markdown files in your knowledge directory. Each file covers one domain: metric definitions, table documentation, business context, SQL gotchas.
 
 ```bash
-l3-agent index ./knowledge   # generate index.json after edits
+kda index ./knowledge   # generate index.json after edits
 ```
 
 The agent sees the index at session start and pulls in full documents on demand via `search_knowledge_base`.
@@ -250,10 +250,10 @@ Query each stage's user count for the target period...
 ## CLI Commands
 
 ```bash
-l3-agent --config config.yaml       # Interactive REPL
-l3-agent demo                        # Bundled demo database
-l3-agent index <directory>           # Generate knowledge index.json
-l3-agent --config config.yaml check  # Validate config, DB, LLM, knowledge
+kda --config config.yaml       # Interactive REPL
+kda demo                        # Bundled demo database
+kda index <directory>           # Generate knowledge index.json
+kda --config config.yaml check  # Validate config, DB, LLM, knowledge
 ```
 
 ---
@@ -275,16 +275,16 @@ l3-agent --config config.yaml check  # Validate config, DB, LLM, knowledge
 
 <!-- TODO: Add links once created -->
 <!-- - [Discord](https://discord.gg/xxx) -->
-- [GitHub Issues](https://github.com/fafawlf/l3-data-agent/issues) — Bug reports and feature requests
-- [GitHub Discussions](https://github.com/fafawlf/l3-data-agent/discussions) — Questions and ideas
+- [GitHub Issues](https://github.com/fafawlf/kaon-data-agent/issues) — Bug reports and feature requests
+- [GitHub Discussions](https://github.com/fafawlf/kaon-data-agent/discussions) — Questions and ideas
 
-If L3 saved you time, consider giving it a star — it helps other analysts find this tool.
+If KDA saved you time, consider giving it a star — it helps other analysts find this tool.
 
 ### Contributors
 
 Created by **[Lifan Wang](https://kaon.io)** — contributions welcome!
 
-[![Contributors](https://contrib.rocks/image?repo=fafawlf/l3-data-agent)](https://github.com/fafawlf/l3-data-agent/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=fafawlf/kaon-data-agent)](https://github.com/fafawlf/kaon-data-agent/graphs/contributors)
 
 ---
 

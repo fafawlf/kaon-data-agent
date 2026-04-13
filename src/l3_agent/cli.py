@@ -1,4 +1,4 @@
-"""L3 Agent CLI — interactive data analysis in your terminal."""
+"""Kaon Data Agent (KDA) CLI — interactive data analysis in your terminal."""
 from __future__ import annotations
 
 import argparse
@@ -45,7 +45,7 @@ def _print_welcome(config_path: str, model: str, db: str):
     console.print(
         Panel(
             Text.from_markup(
-                f"[bold blue]L3 Data Agent[/bold blue]\n"
+                f"[bold blue]Kaon Data Agent[/bold blue]\n"
                 f"Database: [dim]{db}[/dim] | "
                 f"Model: [dim]{model}[/dim]"
             ),
@@ -657,7 +657,7 @@ def _run_manual_analysis(
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="l3-agent",
+        prog="kda",
         description="L3 Autonomous Data Agent — interactive data analysis in your terminal.",
     )
     parser.add_argument(
@@ -719,8 +719,8 @@ def main():
     else:
         parser.print_help()
         console.print(
-            "\n[dim]Quick start: l3-agent demo  |  "
-            "Custom: l3-agent --config config.yaml[/dim]"
+            "\n[dim]Quick start: kda demo  |  "
+            "Custom: kda --config config.yaml[/dim]"
         )
 
 

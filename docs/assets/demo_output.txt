@@ -1,6 +1,6 @@
-$ l3-agent --config examples/demo/config.yaml
+$ kda --config examples/demo/config.yaml
 
-[1;34mL3 Data Agent[0m
+[1;34mKaon Data Agent[0m
 Database: sqlite:///demo.sqlite | Model: claude-sonnet-4-20250514
 
 > What caused the DAU drop around March 14?
