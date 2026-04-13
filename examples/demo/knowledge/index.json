@@ -1,0 +1,17 @@
+[
+  {
+    "domain": "product",
+    "path": "product.md",
+    "annotation": "Product overview: user tiers (free/basic/premium), core metrics (DAU/revenue/chat), platform breakdown, market context."
+  },
+  {
+    "domain": "metrics",
+    "path": "metrics.md",
+    "annotation": "Core metric definitions: DAU, new users, revenue, chat sessions, D1 retention. Includes source tables, calculation rules, and common drill-down dimensions."
+  },
+  {
+    "domain": "tables",
+    "path": "tables.md",
+    "annotation": "Table reference guide: users, events, daily_metrics, user_daily_activity, experiments. Key columns, relationships, and recommended usage patterns."
+  }
+]

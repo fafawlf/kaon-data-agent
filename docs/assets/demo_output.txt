@@ -1,0 +1,38 @@
+$ l3-agent --config examples/demo/config.yaml
+
+[1;34mL3 Data Agent[0m
+Database: sqlite:///demo.sqlite | Model: claude-sonnet-4-20250514
+
+> What caused the DAU drop around March 14?
+
+[1;36m[Tool][0m run_sql
+  [2mSELECT date, dau FROM daily_metrics ORDER BY date[0m
+  [32m-> 31 rows (3ms)[0m
+  [1mAnomaly Confirmed[0m: DAU dropped 22.05% on March 14th (1,560 -> 1,216)
+[1;36m[Tool][0m run_sql
+  [2mSELECT date, dau, revenue_usd, chat_sessions FROM daily_metrics[0m
+  [32m-> 11 rows (1ms)[0m
+  All metrics dropped simultaneously: DAU -22%, Revenue -25%
+[1;36m[Tool][0m get_table_schema(user_daily_activity)
+  [32m-> OK[0m
+[1;36m[Tool][0m run_sql  [2m— dimension decomposition by country[0m
+  [2mSELECT u.country, COUNT(DISTINCT uda.user_id) as baseline, ...[0m
+  [32m-> 6 rows (14ms)[0m
+  [1;33mRoot Cause Identified[0m: Regional outage in India and Japan
+  - [1mIndia[0m:  91.74% drop (242 -> 20 users) — [1;33m64.5% contribution[0m
+  - [1mJapan[0m:  90.51% drop (137 -> 13 users) — [1;33m36.0% contribution[0m
+  - US/GB/DE: stable (<3% change)
+[1;36m[Tool][0m run_sql  [2m— cross-validate by platform[0m
+  [2mSELECT u.country, u.platform, COUNT(DISTINCT uda.user_id) ...[0m
+  [32m-> 6 rows (29ms)[0m
+  All platforms affected uniformly in IN/JP -> infrastructure issue
+[1;36m[Tool][0m run_sql  [2m— check recovery timeline[0m
+  [2mSELECT u.country, MIN(date), MAX(date) FROM user_daily_activity ...[0m
+  [32m-> 2 rows (9ms)[0m
+  Full recovery on March 17th
+
+[1mRoot Cause[0m: Regional infrastructure outage in APAC (India + Japan)
+[1mImpact[0m: 344 users lost, $738 revenue impact over 3 days
+[1mAction[0m: Investigate APAC CDN/server infrastructure, add regional monitoring
+
+[1;35mConfidence: high[0m | Queries: 7 | Duration: 60.8s

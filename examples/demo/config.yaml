@@ -1,0 +1,20 @@
+llm:
+  model: claude-sonnet-4-20250514
+
+database:
+  connection_string: sqlite:///demo.sqlite
+
+agent:
+  max_rounds: 15
+  enable_planning: true
+  enable_compression: true
+
+knowledge:
+  directory: ./knowledge
+
+context:
+  role: >
+    You are an autonomous data analyst for a SaaS product.
+    You investigate metrics, diagnose anomalies, and provide
+    actionable insights backed by evidence.
+  sql_dialect: sqlite

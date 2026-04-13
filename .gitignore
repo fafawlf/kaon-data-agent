@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.env
+.mcp.json
+*.sqlite
+.DS_Store
+output/
+*.log
+.l3_agent_history
