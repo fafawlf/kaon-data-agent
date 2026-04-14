@@ -7,12 +7,13 @@
 KDA doesn't just translate questions to SQL — it investigates root causes,<br>
 decomposes by dimensions, cross-validates, and delivers actionable conclusions.
 
-[![PyPI](https://img.shields.io/pypi/v/kaon-data-agent?color=blue)](https://pypi.org/project/kaon-data-agent/)
+By [Kaon](https://kaon.io)
+
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
 [![GitHub stars](https://img.shields.io/github/stars/fafawlf/kaon-data-agent?style=social)](https://github.com/fafawlf/kaon-data-agent)
 
-[Quick Start](#-quick-start) | [How It Works](#-how-it-works) | [Docs](#-configuration) | [Community](#-community)
+[Quick Start](#quick-start) | [How It Works](#how-it-works) | [Playbooks](#built-in-playbooks) | [Design & FAQ](#design-decisions--faq)
 
 </div>
 
@@ -67,8 +68,6 @@ This creates a demo SQLite database (SaaS product with a deliberate DAU anomaly)
 > Analyze the new_onboarding_flow experiment
 > What are the top countries by revenue per user?
 ```
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fafawlf/kaon-data-agent/blob/main/examples/demo/demo.ipynb)
 
 ### Connect your own database
 
@@ -319,18 +318,10 @@ The key insight: **the framework manages "what to check," the LLM manages "how t
 
 ## Community
 
-<!-- TODO: Add links once created -->
-<!-- - [Discord](https://discord.gg/xxx) -->
 - [GitHub Issues](https://github.com/fafawlf/kaon-data-agent/issues) — Bug reports and feature requests
 - [GitHub Discussions](https://github.com/fafawlf/kaon-data-agent/discussions) — Questions and ideas
 
-If KDA saved you time, consider giving it a star — it helps other analysts find this tool.
-
-### Contributors
-
-Created by **[Lifan Wang](https://kaon.io)** — contributions welcome!
-
-[![Contributors](https://contrib.rocks/image?repo=fafawlf/kaon-data-agent)](https://github.com/fafawlf/kaon-data-agent/graphs/contributors)
+Created by **[Lifan Wang](https://kaon.io)** — contributions welcome.
 
 ---
 
