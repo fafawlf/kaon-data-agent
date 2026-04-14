@@ -18,11 +18,7 @@ decomposes by dimensions, cross-validates, and delivers actionable conclusions.
 
 ---
 
-<p align="center">
-  <a href="https://htmlpreview.github.io/?https://github.com/fafawlf/kaon-data-agent/blob/main/docs/assets/demo_report.html">
-    <strong>View a real analysis report (live demo)</strong>
-  </a>
-</p>
+**[View a sample analysis report](https://htmlpreview.github.io/?https://github.com/fafawlf/kaon-data-agent/blob/main/docs/assets/demo_report.html)** — KDA investigated a DAU drop, ran 11 SQL queries across 9 rounds, identified India + Japan as the root cause (91%+ drop, 100% contribution), and produced this report automatically.
 
 ## Why KDA?
 

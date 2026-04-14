@@ -220,16 +220,35 @@ Example:
   - If user-segment-driven: new vs. returning? Premium vs. free? What changed for them?
 - Cross-reference with events: deployments, experiments, marketing changes, external factors.
 
-## Step 5: Cross-Validation
+## Step 5: User Feedback / Qualitative Validation (MANDATORY)
+
+After finding WHO changed quantitatively, scan for qualitative signals:
+
+1. Based on your findings, derive search keywords for user complaints or bug reports:
+   - Retention/activity drop → search: "crash", "slow", "error", "freeze", "loading", "not working"
+   - Revenue anomaly → search: "payment", "subscribe", "charge", "purchase", "billing"
+   - Quality issues → search: "memory", "forget", "repetitive", "quality", "broken"
+2. Compare complaint volume/themes before vs. during the anomaly period.
+3. **Low complaint volume is itself evidence** — it helps rule out product/technical bugs.
+
+This step provides an independent validation dimension. Skip it only if no
+feedback data source is available, and note that explicitly.
+
+## Step 6: Cross-Validation
 - Validate using a different data source or angle:
   - Does the timing match precisely?
   - Are unaffected segments truly stable (natural control group)?
   - Does a complementary metric confirm the story?
 - If validation fails, go back to Step 2 with a new hypothesis.
 
-## Step 6: Report
-- **One-sentence root cause** — lead with this.
+## Step 7: Report
+
+**Lead with the conclusion.** The first thing the reader sees must be the answer:
+> Root cause: [one sentence]. Impact: [quantified]. Recommendation: [specific action].
+
+Then provide supporting sections:
 - **Impact quantification**: magnitude, duration, revenue impact if applicable.
+- **Evidence chain**: each conclusion linked to the data that supports it.
 - **Recommendations**: ranked by expected impact, specific and actionable.
 - **Open questions**: data gaps, things you couldn't verify.
 
@@ -240,6 +259,7 @@ Example:
 - If a result looks wrong (0% retention, 200% growth), check your SQL before trusting it.
 - Prefer absolute numbers alongside percentages for context.
 - If data is insufficient, say so explicitly. Do not speculate.
+- **Tables first, then conclusions.** Never state a conclusion without showing the data table first.
 """
 
 AB_EXPERIMENT_PLAYBOOK_CONTENT = """\
@@ -279,12 +299,27 @@ Generic dimensions (gender, channel, platform) still get checked but are lower p
 - SRM: chi-squared test on group sizes. If p < 0.01, STOP — SRM invalidates everything.
 
 ### 2. Population Profile + Baseline Expectations (MANDATORY)
-- Query the experiment population's characteristics and compare to your overall user base.
-- This tells you WHO is in the experiment, which determines your expectations.
+- Query the experiment population's key characteristics in ONE SQL:
+  engagement rate, new user %, paying user %, average session duration.
+- Compare to your overall user base to understand WHO is in the experiment:
+
+| Metric | Experiment Users | Overall Baseline | Gap |
+|--------|-----------------|-----------------|-----|
+| Engaged users % | ?% | ~X% | |
+| New users % | ?% | ~Y% | |
+| Paying users % | ?% | ~Z% | |
+
+- **Infer the trigger condition** from population composition:
+  - Engaged users >> baseline → triggered in core product flow (expect higher retention)
+  - New users ≈ 100% → triggered at onboarding (expect lower retention)
+  - Matches baseline → triggered site-wide
 - **You MUST output baseline expectations**:
   > Based on population characteristics, expected D1 retention is approximately X%.
 - **All subsequent comparisons use this baseline as anchor.** Deviations from baseline
-  MUST be explained using population data, not dismissed as "different methodology."
+  MUST be explained using population data:
+  - Wrong: "D1 retention 61%, seems reasonable"
+  - Right: "D1 retention 61%. Experiment is 85% engaged users (vs 50% baseline), so
+    expected retention ≈ 70%. The 9pp gap may be explained by new user dilution."
 
 ### 3. Causal Hypothesis Chain (MANDATORY)
 - Write out the chain as described above.
@@ -331,17 +366,27 @@ Based on experiment type:
 
 Verification steps:
 1. Directly measure the intermediate behavior across groups.
-2. Check transmission: do users with the behavior change also show the metric change?
+2. Check transmission: do users with the changed behavior also show the metric change?
 3. Rule out alternatives: could another behavior explain the metric change?
-4. Quantify: "[behavior X] changed by [Y%], explaining [Z%] of the metric change."
-   If you can't quantify, mark "unable to isolate specific behavioral mechanism."
+4. **Quantify the contribution**: you must be able to write a sentence like:
+   > "[Edit button usage] dropped by [34%] in the treatment group, explaining
+   > approximately [60%] of the observed retention decline."
+   If you cannot produce this sentence, explicitly state:
+   "Unable to isolate the specific behavioral mechanism."
 
 ### 7. Cross-Validation + Conclusion
 - Check for novelty effects: plot the treatment effect by day. Is it stable or decaying?
 - Cross-validate with related metrics.
 - Actively look for counter-evidence.
 
-**Conclusion format**: ship / iterate / kill, with specific reasoning.
+### Report Structure
+
+**Lead with the conclusion.** The first paragraph of your report must be:
+> **Conclusion**: [ship/iterate/kill] [treatment name]. [one-sentence key finding].
+> [2-3 key metric changes with numbers]. [specific recommendation].
+
+Then provide the supporting analysis in the step order above.
+Every data table MUST be followed by an interpretation paragraph.
 
 ## Statistical Standards
 - z-test for proportions (retention, conversion). t-test for continuous metrics.
@@ -351,13 +396,17 @@ Verification steps:
 - Confidence intervals: 95%, always reported alongside p-values.
 
 ## Iron Disciplines (non-negotiable)
-- SRM check is mandatory.
-- Population profile + baseline expectations are mandatory.
-- Every metric comparison needs a z-test. Don't say "better" — say "z=2.31, p<0.05."
-- Dimension drill-downs MUST show data tables before conclusions.
-- **Show ALL groups** in every comparison — not just the winner.
-- **Behavioral verification is mandatory.** The analysis is incomplete without it.
-- Conclusions must be causal: not "metric changed" but "[behavior] changed causing [metric] to change."
+1. SRM check is mandatory.
+2. Population profile + baseline expectations are mandatory (Step 2).
+3. Every metric comparison needs a z-test. Don't say "better" — say "z=2.31, p<0.05."
+4. Deviations from baseline must be explained with population data (not dismissed).
+5. Multiple comparisons: Bonferroni correction.
+6. Sample < 500 per cell: do not conclude, mark "insufficient power."
+7. Conclusions must be **causal sentences**: not "metric changed" but
+   "[behavior] changed causing [metric] to change."
+8. Dimension drill-downs MUST show data tables BEFORE conclusions.
+9. **Show ALL groups** in every comparison — not just the winner.
+10. **Behavioral verification is mandatory.** Without it, the analysis is incomplete.
 """
 
 EXPLORATORY_PLAYBOOK_CONTENT = """\

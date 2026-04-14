@@ -1,6 +1,6 @@
 ---
 name: exploratory
-description: Open-ended exploratory analysis — lightweight discovery framework
+description: Open-ended exploratory analysis
 triggers: [explore, investigate, "tell me about", overview, "deep dive"]
 ---
 

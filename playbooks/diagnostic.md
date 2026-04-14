@@ -1,6 +1,6 @@
 ---
 name: diagnostic
-description: Metric anomaly investigation — structured root cause analysis
+description: Metric anomaly investigation with structured root cause analysis
 triggers: [anomaly, drop, spike, decline, "why did", "what happened", "what caused"]
 ---
 
@@ -45,16 +45,35 @@ Example:
   - If user-segment-driven: new vs. returning? Premium vs. free? What changed for them?
 - Cross-reference with events: deployments, experiments, marketing changes, external factors.
 
-## Step 5: Cross-Validation
+## Step 5: User Feedback / Qualitative Validation (MANDATORY)
+
+After finding WHO changed quantitatively, scan for qualitative signals:
+
+1. Based on your findings, derive search keywords for user complaints or bug reports:
+   - Retention/activity drop → search: "crash", "slow", "error", "freeze", "loading", "not working"
+   - Revenue anomaly → search: "payment", "subscribe", "charge", "purchase", "billing"
+   - Quality issues → search: "memory", "forget", "repetitive", "quality", "broken"
+2. Compare complaint volume/themes before vs. during the anomaly period.
+3. **Low complaint volume is itself evidence** — it helps rule out product/technical bugs.
+
+This step provides an independent validation dimension. Skip it only if no
+feedback data source is available, and note that explicitly.
+
+## Step 6: Cross-Validation
 - Validate using a different data source or angle:
   - Does the timing match precisely?
   - Are unaffected segments truly stable (natural control group)?
   - Does a complementary metric confirm the story?
 - If validation fails, go back to Step 2 with a new hypothesis.
 
-## Step 6: Report
-- **One-sentence root cause** — lead with this.
+## Step 7: Report
+
+**Lead with the conclusion.** The first thing the reader sees must be the answer:
+> Root cause: [one sentence]. Impact: [quantified]. Recommendation: [specific action].
+
+Then provide supporting sections:
 - **Impact quantification**: magnitude, duration, revenue impact if applicable.
+- **Evidence chain**: each conclusion linked to the data that supports it.
 - **Recommendations**: ranked by expected impact, specific and actionable.
 - **Open questions**: data gaps, things you couldn't verify.
 
@@ -65,3 +84,4 @@ Example:
 - If a result looks wrong (0% retention, 200% growth), check your SQL before trusting it.
 - Prefer absolute numbers alongside percentages for context.
 - If data is insufficient, say so explicitly. Do not speculate.
+- **Tables first, then conclusions.** Never state a conclusion without showing the data table first.
