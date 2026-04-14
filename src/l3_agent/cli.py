@@ -7,7 +7,7 @@ import os
 import signal
 import sys
 import time
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from rich.console import Console
@@ -134,6 +134,31 @@ def _display_footer(
     console.print()
 
 
+def _save_report(result: dict, question: str = "") -> str | None:
+    """Generate and save an HTML report from an analysis result.
+
+    Returns the output path on success, or None on failure.
+    """
+    try:
+        from l3_agent.report import generate_report
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = Path("./output")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = str(output_dir / f"report_{timestamp}.html")
+
+        # Ensure the question is in the result for title generation
+        if question and "question" not in result:
+            result = {**result, "question": question}
+
+        generate_report(result, output_path=output_path)
+        console.print(f"  Report saved: [bold]{output_path}[/bold]")
+        return output_path
+    except Exception as e:
+        console.print(f"  [dim]Report generation skipped: {e}[/dim]")
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Agent execution wrapper
 # ---------------------------------------------------------------------------
@@ -189,6 +214,7 @@ def _run_analysis(agent, question: str, messages: list[dict]) -> list[dict]:
                     answer = result.get("answer", "")
                     if answer:
                         _display_streaming_text(answer)
+                        _save_report(result, question)
         else:
             # Fallback: non-streaming analyze()
             with console.status("[bold]Analyzing...", spinner="dots"):
@@ -202,6 +228,7 @@ def _run_analysis(agent, question: str, messages: list[dict]) -> list[dict]:
             answer = result.get("answer", "")
             if answer:
                 _display_streaming_text(answer)
+                _save_report(result, question)
 
             confidence = result.get("confidence")
             query_count = result.get("tool_stats", {}).get("total_calls", 0)
@@ -563,8 +590,10 @@ def _run_manual_analysis(
     # Agentic loop
     tool_schemas = tools.get_claude_tools()
     query_count = 0
+    query_log: list[dict] = []  # Track queries for report generation
     start = time.time()
     finished = False
+    final_answer = ""
 
     for _round in range(config.agent.max_rounds):
         with console.status("[bold]Thinking...", spinner="dots"):
@@ -604,6 +633,14 @@ def _run_manual_analysis(
 
                 if tool_name == "run_sql":
                     query_count += 1
+                    query_log.append({
+                        "sql": tool_input.get("sql", ""),
+                        "reason": tool_input.get("reason", ""),
+                        "reasoning": tool_input.get("reasoning", ""),
+                        "result_full": result.content,
+                        "success": result.success,
+                        "duration_ms": result.duration_ms,
+                    })
 
                 tool_results.append({
                     "type": "tool_result",
@@ -619,7 +656,8 @@ def _run_manual_analysis(
         if stop_reason == "end_turn" or not tool_results:
             for block in assistant_content:
                 if block.get("type") == "text" and block.get("text", "").strip():
-                    _display_streaming_text(block["text"])
+                    final_answer = block["text"]
+                    _display_streaming_text(final_answer)
             finished = True
             break
 
@@ -643,12 +681,28 @@ def _run_manual_analysis(
                 )
             for block in resp.get("content", []):
                 if block.get("type") == "text" and block.get("text", "").strip():
-                    _display_streaming_text(block["text"])
+                    final_answer = block["text"]
+                    _display_streaming_text(final_answer)
         except Exception as e:
             console.print(f"[tool.error]Summary failed: {e}[/tool.error]")
 
     duration = time.time() - start
     _display_footer(None, query_count, duration)
+
+    # Generate HTML report if we have an answer
+    if final_answer:
+        _save_report(
+            {
+                "answer": final_answer,
+                "question": question,
+                "queries": query_log,
+                "tool_stats": {
+                    "total_calls": query_count,
+                    "total_duration_secs": duration,
+                },
+            },
+            question=question,
+        )
 
 
 # ---------------------------------------------------------------------------
