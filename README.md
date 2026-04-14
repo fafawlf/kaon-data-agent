@@ -255,19 +255,6 @@ kda --config config.yaml check  # Validate config, DB, LLM, knowledge
 
 ---
 
-## Roadmap
-
-- [ ] Web UI (Chainlit / Streamlit)
-- [ ] Demo GIF and Colab notebook
-- [ ] BigQuery, Snowflake, ClickHouse adapters
-- [ ] MCP server integration for enterprise metadata
-- [ ] Chart generation and visual diagnostics
-- [ ] Community playbook library
-- [ ] Scheduled analysis and alerting
-- [ ] Chinese README
-
----
-
 ## Community
 
 <!-- TODO: Add links once created -->
