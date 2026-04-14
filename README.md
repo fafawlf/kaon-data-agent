@@ -1,7 +1,6 @@
 <div align="center">
 
-<!-- TODO: Replace with actual logo -->
-<img src="docs/assets/logo.svg" alt="Kaon Data Agent" width="320" />
+<img src="docs/assets/logo.png" alt="Kaon Data Agent" width="320" />
 
 # Kaon Data Agent (KDA)
 
