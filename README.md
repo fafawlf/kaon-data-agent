@@ -255,6 +255,68 @@ kda --config config.yaml check  # Validate config, DB, LLM, knowledge
 
 ---
 
+## Design Decisions & FAQ
+
+### How is KDA different from just giving an LLM access to a database?
+
+A raw LLM with database access will write one query, return a table, and say "here's your data." KDA is fundamentally different:
+
+1. **Playbook-driven, not free-form.** AB experiments follow a mandatory 7-step framework (SRM → baseline → causal hypothesis → metrics → drill-down → behavioral verification → conclusion). The agent operates within methodological constraints — it decides *how* to investigate, but the *what to check* is enforced.
+2. **Plan before execute.** Every analysis starts with a structured plan: hypotheses, steps, dependencies, estimated query count. The plan guides execution but doesn't constrain it — if the agent discovers something unexpected, it adapts.
+3. **Self-assessed confidence.** After analysis, the agent runs a mandatory self-evaluation: confidence level (high/medium/low), reasoning, ruled-out hypotheses, evidence summary. It doesn't just give answers — it tells you how certain it is and why.
+
+### How does context management work?
+
+Three-layer dynamic loading instead of stuffing everything into the prompt:
+
+- **Core layer** (always loaded): agent identity, analysis principles, SQL safety rules.
+- **On-demand layer** (keyword-triggered): "revenue" question → load revenue table schemas. "experiment" → load experiment tables. 12 schema groups, matched by keyword detection in the question.
+- **Runtime layer** (during execution): if a SQL query references a table not yet loaded → auto-append that table's schema for the next round.
+
+Large results (>3000 chars) are auto-compressed: the LLM sees a 20-row preview + stats summary, full data is saved to disk. Context compression kicks in when conversation history approaches the token limit — middle rounds are summarized, head/tail preserved.
+
+### How does the agentic loop work?
+
+The core is a `tool_use` loop with up to 20 rounds:
+
+1. **ContextManager** builds system prompt from config + question-relevant schemas
+2. **Planner** generates a structured analysis plan (hypotheses + steps)
+3. **Main loop**: LLM decides which tool to call → system executes (validate → pre_execute → execute → post_execute) → result returns to LLM → LLM decides next step
+4. **Early stopping**: LLM can end at any round when it has enough evidence
+5. **Force convergence**: if 20 rounds exhausted, `_force_summarize()` generates conclusions from collected data (never fails silently)
+6. **Confidence assessment**: one additional LLM call for self-evaluation
+
+Error recovery: API failures trigger exponential backoff retry (5 attempts) with a final 30s fallback. Retryable errors (429/503/overloaded) are distinguished from fatal errors.
+
+### How do tools work?
+
+Every tool call goes through a 4-step pipeline:
+
+```
+validate_input() → pre_execute() → execute() → post_execute()
+```
+
+- **validate**: check required parameters, type safety
+- **pre_execute**: safety guardrails — block write operations (INSERT/UPDATE/DELETE/DROP), block queries on large tables without date filters, block deprecated table names
+- **execute**: run the actual operation (SQL query, knowledge search, schema lookup)
+- **post_execute**: compress large results, add metadata
+
+Blocked calls are counted as `denied` (not `errors`) in tool_stats — useful for auditing how often the agent tries unsafe operations.
+
+Built-in tools: `run_sql`, `discover_tables`, `get_table_schema`, `search_knowledge_base`. Adding custom tools: subclass `BaseTool`, implement `execute()`, register in `ToolRegistry`.
+
+### What makes the playbooks effective?
+
+The playbooks are not suggestions — they contain **non-negotiable disciplines**:
+
+- **AB experiment**: "Every metric comparison needs a z-test. Don't say 'better' — say 'z=2.31, p<0.05.'" Behavioral verification is mandatory — the analysis is incomplete without proving *which user behavior changed*.
+- **Diagnostic**: "NEVER say 'segment X dropped.' ALWAYS say 'segment X contributed N% of the total decline (from A to B, -C%).'" Volume vs. rate distinction is enforced.
+- **Both**: tables before conclusions, conclusion-first reports, specific numbers with baselines.
+
+The key insight: **the framework manages "what to check," the LLM manages "how to check it and what it means."** This prevents shallow analysis (skipping statistical tests, missing dimensions) while preserving the LLM's ability to reason about unexpected findings.
+
+---
+
 ## Community
 
 <!-- TODO: Add links once created -->
