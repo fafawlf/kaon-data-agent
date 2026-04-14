@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="docs/assets/logo.png" alt="Kaon Data Agent" width="180" />
-
 # Kaon Data Agent (KDA)
 
 **The first open-source playbook-driven data analysis agent.**
@@ -22,10 +20,8 @@ decomposes by dimensions, cross-validates, and delivers actionable conclusions.
 
 <p align="center">
   <a href="https://htmlpreview.github.io/?https://github.com/fafawlf/kaon-data-agent/blob/main/docs/assets/demo_report.html">
-    <img src="docs/assets/demo.svg" alt="KDA demo — investigating a DAU drop" width="800" />
+    <strong>View a real analysis report (live demo)</strong>
   </a>
-  <br>
-  <sub><a href="https://htmlpreview.github.io/?https://github.com/fafawlf/kaon-data-agent/blob/main/docs/assets/demo_report.html">View full interactive report</a></sub>
 </p>
 
 ## Why KDA?

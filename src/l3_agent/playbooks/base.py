@@ -181,132 +181,183 @@ class PlaybookRegistry:
 DIAGNOSTIC_PLAYBOOK_CONTENT = """\
 # Metric Anomaly Diagnostic Playbook
 
-You are investigating a metric anomaly. Follow this structured framework to
-identify the root cause with quantitative rigor.
+You are investigating a metric anomaly. Your job is to find the root cause —
+not stop at "something dropped," but explain WHY and recommend WHAT TO DO.
+
+Investigate like a real analyst. Keep querying until you find the answer.
+You have plenty of query budget — don't be stingy.
 
 ## Step 1: Confirm the Anomaly
-- Query the metric's recent trend (7-day and 30-day windows).
-- Determine: is this a real anomaly or normal variance?
-- Quantify the deviation: how many standard deviations from the moving average?
-- Note the exact timeframe when the anomaly started and whether it has recovered.
+- Pull 14-30 day trend. Is this a sudden break or gradual drift?
+- Quantify: how many standard deviations from the moving average?
+- Check related metrics: did they move together or diverge?
+  (DAU + Revenue + Engagement moving together = systemic; diverging = targeted)
 
-## Step 2: Dimension Decomposition
-- Break the metric down by its key dimensions (e.g. platform, country, channel,
-  user segment, product area).
-- For each dimension, calculate the **contribution** to the total change:
-  `contribution = (segment_delta / total_delta) * 100%`
-- Identify which segments are driving the anomaly vs. which are stable.
-- **Discipline**: always quantify contribution percentages. Do not stop at
-  "segment X went down" — state "segment X contributed 73% of the total decline."
+## Step 2: Dimension Decomposition (the core step)
+- Break down by EVERY available dimension: country, platform, channel, user segment.
+- For EACH dimension, calculate **contribution percentage**:
+  `contribution = segment_change / total_change * 100%`
+- Rank segments by contribution. The top 1-2 segments usually explain 80%+ of the change.
 
-## Step 3: Distinguish Volume vs. Rate Changes
-- For ratio metrics (e.g. conversion rate), always decompose into:
-  - Numerator change (volume effect)
-  - Denominator change (mix effect)
-  - True rate change (behavioral effect)
-- A "rate drop" caused entirely by denominator inflation is a different root cause
-  than a genuine behavioral shift.
+**Iron discipline**: NEVER say "segment X dropped." ALWAYS say "segment X contributed
+N% of the total decline (from A to B, -C%)." Numbers must be specific.
 
-## Step 4: Root Cause Investigation
-- Based on the dimension decomposition, drill into the top contributing segments.
-- Look for coinciding events: deployments, experiments, marketing campaigns,
-  external factors (holidays, outages, competitor actions).
-- Cross-reference with related metrics to build a causal narrative.
-- **Discipline**: do not stop at the dimension level. "Mobile dropped" is not a
-  root cause — investigate *why* mobile dropped.
+## Step 3: Volume vs. Rate (critical distinction)
+- Is a segment SMALLER (fewer users in it = external cause, e.g. channel stopped sending traffic)?
+- Or are users in the segment BEHAVING DIFFERENTLY (same volume, lower rate = internal cause)?
+- This distinction determines whether the root cause is external (marketing, partnership, outage)
+  or internal (product change, bug, degradation).
+
+Example:
+- "Japan DAU dropped 90%" → volume change → external (outage, block, regulatory)
+- "iOS conversion rate dropped 3pp but volume unchanged" → rate change → internal (app bug, UI regression)
+
+## Step 4: Root Cause Investigation (do NOT stop at dimension level)
+- "Mobile dropped" is NOT a root cause. WHY did mobile drop?
+- Drill into the top contributing segment:
+  - If channel-driven: which campaign? When did it start? What's the user quality?
+  - If country-driven: organic or paid? Only one platform or all? Regulatory change?
+  - If user-segment-driven: new vs. returning? Premium vs. free? What changed for them?
+- Cross-reference with events: deployments, experiments, marketing changes, external factors.
 
 ## Step 5: Cross-Validation
-- Validate the hypothesis by checking:
-  - Does the timing align precisely with the suspected cause?
-  - Are unaffected segments truly stable (control group logic)?
+- Validate using a different data source or angle:
+  - Does the timing match precisely?
+  - Are unaffected segments truly stable (natural control group)?
   - Does a complementary metric confirm the story?
-- If the hypothesis does not hold under cross-validation, return to Step 2.
+- If validation fails, go back to Step 2 with a new hypothesis.
 
-## Step 6: Summary and Recommendations
-- State the root cause clearly in one sentence.
-- Quantify the impact (magnitude and duration).
-- Provide actionable recommendations ranked by expected impact.
-- Flag any data quality concerns or open questions.
+## Step 6: Report
+- **One-sentence root cause** — lead with this.
+- **Impact quantification**: magnitude, duration, revenue impact if applicable.
+- **Recommendations**: ranked by expected impact, specific and actionable.
+- **Open questions**: data gaps, things you couldn't verify.
 
-## Disciplines (apply throughout)
-- Always start broad, then narrow. Do not jump to a hypothesis before decomposition.
-- Every claim must have a number attached.
+## Disciplines (non-negotiable)
+- Every number must have a comparison baseline. "DAU was 1,200" means nothing.
+  "DAU was 1,200 vs. 1,560 baseline (-23%)" means everything.
+- Don't write all SQL at once — each result should inform the next query.
+- If a result looks wrong (0% retention, 200% growth), check your SQL before trusting it.
 - Prefer absolute numbers alongside percentages for context.
-- If data is insufficient to reach a conclusion, say so explicitly — do not speculate.
+- If data is insufficient, say so explicitly. Do not speculate.
 """
 
 AB_EXPERIMENT_PLAYBOOK_CONTENT = """\
 # AB Experiment Analysis Playbook
 
-You are analyzing an AB experiment. Follow this 7-step framework to produce
-a rigorous, actionable analysis.
+A good AB analysis is NOT "did the metric go up or down." It is
+"WHY did it go up/down, and specifically WHICH user behavior changed."
 
-## Step 1: Sample Ratio Mismatch (SRM) Check
-- Compare actual group sizes to expected allocation ratios.
-- Use a chi-squared test: if p < 0.01, flag SRM and **stop the analysis**.
-- SRM invalidates all downstream results. Investigate the assignment mechanism
-  before proceeding.
+## The Causal Inference Framework (the soul of the analysis)
 
-## Step 2: Baseline Validation
-- Confirm pre-experiment parity between treatment and control on key metrics.
-- Check that randomization produced balanced groups on observable covariates.
-- If significant pre-experiment differences exist, note them and consider
-  adjustment methods (CUPED, stratified analysis).
+Before writing any SQL, build a causal hypothesis chain:
 
-## Step 3: Causal Hypothesis
-- State clearly: "We hypothesize that [treatment] causes [expected effect]
-  on [primary metric] because [mechanism]."
-- Define the causal chain: treatment -> intermediate behavior -> outcome metric.
-- This chain will be validated in Step 6.
+```
+What the experiment changed (product change)
+    ↓
+Which user behaviors are directly affected (first-order effects)
+    ↓
+How those behavior changes propagate to core metrics (causal chain)
+    ↓
+Which user segments are most sensitive to this change (moderators)
+```
 
-## Step 4: Primary and Secondary Metrics
-- **Primary metric**: calculate the difference, confidence interval, and p-value.
-  - Use a two-sided z-test for proportions or t-test for means.
-  - Report the observed lift: `(treatment - control) / control * 100%`
-  - Report 95% confidence interval for the lift.
-  - Compare observed effect to Minimum Detectable Effect (MDE).
-- **Secondary metrics**: apply Bonferroni correction for multiple comparisons.
-  - With N secondary metrics, use significance threshold `alpha / N`.
-- **Guardrail metrics**: check that no guardrail metric has degraded beyond
-  the acceptable threshold.
+**You MUST write out this chain after the baseline step:**
+> **Treatment**: [what changed? If background doesn't say, infer from experiment name and mark "inferred"]
+> **Directly affected behaviors**: [which interactions change in discoverability/cost/quality?]
+> **Causal chain**: [change] → [behavior X changes] → [metric Y changes]
+> **Most sensitive segment**: [who is most exposed? who adapts least?]
+> **Hypotheses to verify**: [2-3 specific, queryable hypotheses]
 
-## Step 5: Dimension Drill-Down
-- Break down the treatment effect by key dimensions (platform, country,
-  user segment, new vs. returning, etc.).
-- Look for heterogeneous treatment effects: does the treatment help one
-  segment while hurting another?
-- **Discipline**: dimension drill-downs are exploratory. Clearly label any
-  subgroup finding as hypothesis-generating, not confirmatory.
+ALL subsequent dimension choices and behavioral analysis MUST follow this chain.
+Generic dimensions (gender, channel, platform) still get checked but are lower priority.
 
-## Step 6: Behavioral Verification
-- Trace the causal chain from Step 3:
-  - Did the intermediate behavior change as expected?
-  - Is the magnitude of intermediate change consistent with the outcome change?
-- Example: if the hypothesis is "new onboarding flow increases retention because
-  users complete more steps," verify that step completion actually increased.
-- If the causal chain breaks, the result may be spurious or driven by a
-  different mechanism.
+## Steps
 
-## Step 7: Conclusion and Cross-Validation
-- Summarize: ship, iterate, or kill.
-- State confidence level and key caveats.
-- Cross-validate: does the result make sense given prior experiments,
-  domain knowledge, and related metric movements?
-- Provide specific next-step recommendations.
+### 1. Experiment Overview + SRM Check
+- Group sizes, time range, allocation ratios.
+- SRM: chi-squared test on group sizes. If p < 0.01, STOP — SRM invalidates everything.
+
+### 2. Population Profile + Baseline Expectations (MANDATORY)
+- Query the experiment population's characteristics and compare to your overall user base.
+- This tells you WHO is in the experiment, which determines your expectations.
+- **You MUST output baseline expectations**:
+  > Based on population characteristics, expected D1 retention is approximately X%.
+- **All subsequent comparisons use this baseline as anchor.** Deviations from baseline
+  MUST be explained using population data, not dismissed as "different methodology."
+
+### 3. Causal Hypothesis Chain (MANDATORY)
+- Write out the chain as described above.
+- If the experiment background is incomplete, infer and mark "[inferred]".
+- List 2-3 specific hypotheses to test.
+
+### 4. Core Metrics — All Groups (z-test significance)
+- Show EVERY group, not just the winner. Readers need to see the full picture.
+- For each test vs. control: z-test for proportions, t-test for means.
+- Multiple groups: apply **Bonferroni correction** (alpha = 0.05 / number_of_comparisons).
+- Report: absolute value, difference in pp, relative %, z-score, p-value.
+- Calculate MDE: is the sample large enough to detect the observed effect?
+- Look for the **strategy gradient**: from control through each test group,
+  is the effect linear or is there a breakpoint?
+
+### 5. Dimension Drill-Down
+**Priority: causal chain dimensions FIRST, generic dimensions SECOND.**
+
+First priority (at least half your SQL budget): dimensions on the causal chain.
+- What validates or invalidates the causal hypothesis?
+- Who is most exposed to the change? Who is most sensitive?
+
+Second priority: generic dimensions for systematic bias check.
+- Platform, country, channel, new vs. returning users.
+- Not significant? One sentence and move on.
+
+**Every drill-down MUST**:
+1. State WHY you're checking this dimension.
+2. Show data table with ALL groups.
+3. Interpret: does this dimension moderate the treatment effect?
+
+### 6. Behavioral Mechanism Verification (MANDATORY — do not skip)
+
+**Goal: answer "specifically WHAT user behavior changed, causing the metric change."
+Skip this step and your analysis is a half-finished product.**
+
+You MUST execute at least one SQL query to verify the causal chain before concluding.
+
+Based on experiment type:
+- **UI/layout experiments**: measure each interaction type's usage rate across groups
+- **Backend/algorithm experiments**: measure output quality metrics (response time, relevance)
+- **Recommendation experiments**: measure funnel conversion at each stage
+- **Feature experiments**: measure feature adoption rate and frequency
+
+Verification steps:
+1. Directly measure the intermediate behavior across groups.
+2. Check transmission: do users with the behavior change also show the metric change?
+3. Rule out alternatives: could another behavior explain the metric change?
+4. Quantify: "[behavior X] changed by [Y%], explaining [Z%] of the metric change."
+   If you can't quantify, mark "unable to isolate specific behavioral mechanism."
+
+### 7. Cross-Validation + Conclusion
+- Check for novelty effects: plot the treatment effect by day. Is it stable or decaying?
+- Cross-validate with related metrics.
+- Actively look for counter-evidence.
+
+**Conclusion format**: ship / iterate / kill, with specific reasoning.
 
 ## Statistical Standards
-- Default significance level: alpha = 0.05 (two-sided).
-- Always report confidence intervals, not just p-values.
-- For ratio metrics, use delta method or bootstrap for variance estimation.
-- For sequential testing, use appropriate group sequential boundaries.
-- Minimum experiment duration: 7 days (to capture day-of-week effects).
-- Document any deviations from the pre-registered analysis plan.
+- z-test for proportions (retention, conversion). t-test for continuous metrics.
+- Multiple comparisons: Bonferroni correction (alpha / N comparisons).
+- Effect size: report absolute difference (pp) AND relative difference (%).
+- MDE: calculate based on sample size. If sample < 500 per cell, mark "insufficient power."
+- Confidence intervals: 95%, always reported alongside p-values.
 
-## Template Placeholders
-- Experiment assignment table: `{{experiment_table}}`
-- Experiment variant column: `{{variant_column}}`
-- User identifier column: `{{user_id_column}}`
-- Experiment name/ID filter: `{{experiment_filter}}`
+## Iron Disciplines (non-negotiable)
+- SRM check is mandatory.
+- Population profile + baseline expectations are mandatory.
+- Every metric comparison needs a z-test. Don't say "better" — say "z=2.31, p<0.05."
+- Dimension drill-downs MUST show data tables before conclusions.
+- **Show ALL groups** in every comparison — not just the winner.
+- **Behavioral verification is mandatory.** The analysis is incomplete without it.
+- Conclusions must be causal: not "metric changed" but "[behavior] changed causing [metric] to change."
 """
 
 EXPLORATORY_PLAYBOOK_CONTENT = """\
