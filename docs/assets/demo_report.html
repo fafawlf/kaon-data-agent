@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+body { margin: 0; background: #0f172a; font-family: -apple-system, system-ui, sans-serif; }
+.container { max-width: 900px; margin: 0 auto; padding: 40px 30px; }
+.header h1 { color: #e2e8f0; font-size: 22px; margin-bottom: 12px; }
+.header h1 .hl { color: #3b82f6; }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.tag { background: #273449; padding: 4px 12px; border-radius: 6px; font-size: 12px; color: #94a3b8; }
+.tag.conf { border: 1px solid #22c55e; color: #22c55e; }
+.nav { display: flex; gap: 6px; margin-bottom: 24px; }
+.nav-btn { padding: 6px 14px; border-radius: 6px; font-size: 13px; color: #94a3b8; background: #1e293b; border: 1px solid #334155; }
+.nav-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.summary-item { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px 18px; }
+.summary-item .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.summary-item .value { font-size: 22px; font-weight: 700; color: #e2e8f0; }
+.summary-item .value.green { color: #22c55e; }
+.hero { background: #1e293b; border-left: 3px solid #3b82f6; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #e2e8f0; font-size: 15px; font-weight: 600; }
+.section-title { color: #e2e8f0; font-size: 18px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #334155; }
+.card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+.card-header { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; background: #273449; border-left: 3px solid #3b82f6; }
+.badge { width: 28px; height: 28px; border-radius: 50%; background: #3b82f6; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.card-meta .label2 { font-size: 10px; color: #64748b; text-transform: uppercase; }
+.card-meta .title2 { font-size: 14px; color: #e2e8f0; font-weight: 600; margin-top: 1px; }
+.card-body { padding: 14px 18px; color: #94a3b8; font-size: 13px; line-height: 1.6; }
+.sql-line { padding: 8px 18px; background: #0d1117; font-family: monospace; font-size: 11px; color: #8b949e; border-top: 1px solid #334155; }
+.sql-line .kw { color: #ff7b72; }
+.sql-line .str { color: #a5d6ff; }
+.result-line { padding: 8px 18px; font-size: 12px; color: #22c55e; border-top: 1px solid #1a2332; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: monospace; }
+th { background: #0d1117; padding: 6px 12px; text-align: left; color: #64748b; border-bottom: 1px solid #334155; }
+td { padding: 5px 12px; color: #94a3b8; border-bottom: 1px solid #1a2332; }
+td.neg { color: #ef4444; font-weight: 600; }
+td.pos { color: #22c55e; font-weight: 600; }
+.table-wrap { padding: 0 18px 12px; overflow-x: auto; }
+</style></head><body>
+<div class="container">
+  <div class="header">
+    <h1><span class="hl">Analysis</span> — What caused the DAU drop around March 14-16?</h1>
+    <div class="tags">
+      <span class="tag conf">Confidence: High</span>
+      <span class="tag">11 queries</span>
+      <span class="tag">75.0s</span>
+    </div>
+  </div>
+  <div class="nav">
+    <span class="nav-btn active">Investigation</span>
+    <span class="nav-btn">Conclusion</span>
+    <span class="nav-btn">Evidence</span>
+  </div>
+  <div class="summary">
+    <div class="summary-item"><div class="label">Queries</div><div class="value green">11</div></div>
+    <div class="summary-item"><div class="label">Successful</div><div class="value green">10</div></div>
+    <div class="summary-item"><div class="label">Confidence</div><div class="value green">High</div></div>
+    <div class="summary-item"><div class="label">Duration</div><div class="value">75.0s</div></div>
+  </div>
+  <div class="hero">Root Cause: Regional Service Outage in India and Japan</div>
+  <div class="section-title">Investigation — 11 Steps</div>
+  <div class="card">
+    <div class="card-header">
+      <div class="badge">1</div>
+      <div class="card-meta"><div class="label2">ANALYSIS</div><div class="title2">Confirm DAU anomaly and quantify the drop</div></div>
+    </div>
+    <div class="card-body">DAU dropped 22.05% on March 14th (1,560 → 1,216). All metrics dropped simultaneously: Revenue -25%, Chat sessions -18%.</div>
+    <div class="sql-line"><span class="kw">SELECT</span> date, dau <span class="kw">FROM</span> daily_metrics <span class="kw">ORDER BY</span> date</div>
+    <div class="result-line">→ 31 rows (3ms)</div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="badge">4</div>
+      <div class="card-meta"><div class="label2">ANALYSIS</div><div class="title2">Dimension decomposition by country</div></div>
+    </div>
+    <div class="card-body"><strong style="color:#f9e2af">Root Cause Identified</strong>: India -91.74% (242→20), Japan -90.51% (137→13). US/GB/DE stable.</div>
+    <div class="table-wrap"><table>
+      <tr><th>Country</th><th>Baseline</th><th>Anomaly</th><th>Change</th><th>Contribution</th></tr>
+      <tr><td>IN</td><td>242</td><td>20</td><td class="neg">-91.74%</td><td class="neg">64.5%</td></tr>
+      <tr><td>JP</td><td>137</td><td>13</td><td class="neg">-90.51%</td><td class="neg">36.0%</td></tr>
+      <tr><td>US</td><td>612</td><td>611</td><td>-0.16%</td><td>0.3%</td></tr>
+      <tr><td>GB</td><td>163</td><td>159</td><td>-2.48%</td><td>1.2%</td></tr>
+      <tr><td>DE</td><td>167</td><td>163</td><td>-2.40%</td><td>1.2%</td></tr>
+    </table></div>
+  </div>
+</div>
+</body></html>

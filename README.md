@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/logo.png" alt="Kaon Data Agent" width="320" />
+<img src="docs/assets/logo.png" alt="Kaon Data Agent" width="180" />
 
 # Kaon Data Agent (KDA)
 
@@ -20,7 +20,13 @@ decomposes by dimensions, cross-validates, and delivers actionable conclusions.
 
 ---
 
-<p align="center"><img src="docs/assets/demo.svg" alt="KDA demo — investigating a DAU drop" width="800" /></p>
+<p align="center">
+  <a href="https://htmlpreview.github.io/?https://github.com/fafawlf/kaon-data-agent/blob/main/docs/assets/demo_report.html">
+    <img src="docs/assets/demo.svg" alt="KDA demo — investigating a DAU drop" width="800" />
+  </a>
+  <br>
+  <sub><a href="https://htmlpreview.github.io/?https://github.com/fafawlf/kaon-data-agent/blob/main/docs/assets/demo_report.html">View full interactive report</a></sub>
+</p>
 
 ## Why KDA?
 
